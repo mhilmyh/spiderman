@@ -1,6 +1,6 @@
 # Spiderman
 
-There are many kinds of spiderman. But this spiderman will help you scrap the web
+There are many kinds of spiderman (php, python, etc). But this spiderman will help you scrap the web
 
 ## Getting Started
 
@@ -23,13 +23,21 @@ A step by step series that tell you how to get a development env running :
 git clone [this repo]
 ```
 
-And choose the type of spiderman ex. :
+Do migrate please (every migration file is in subfolder ex. choose php) :
 
 ```
-cd [your spidey]
+cd php
+php migration.php
 ```
 
-The last is run the script.
+And choose the type of spiderman (ex. choose php):
+
+```
+cd php
+php runner.php
+```
+
+Actually, you could edit the runner.php and any file as you want. I'm not providing any formal ways to do it.
 
 ## Contributing
 
@@ -37,7 +45,7 @@ Please read CONTRIBUTING.md which is none. Sorry for that
 
 ## Authors
 
-* **Only me** - Muhamad Hilmy Haidar
+- **Only me** - Muhamad Hilmy Haidar
 
 ## License
 

@@ -2,4 +2,9 @@
 
 include 'spiderman.php';
 
-$spidey = new Spiderman("https://www.youtube.com/a/b/c/d/e?v=liRrLTu698k&t=554s");
+$options = [
+    CURLOPT_HEADER => true,
+    CURLOPT_FOLLOWLOCATION => true
+];
+
+$spidey = new Spiderman("https://stackoverflow.com/questions/28169042/php-curl-web-scraping");

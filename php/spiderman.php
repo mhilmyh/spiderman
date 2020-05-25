@@ -2,6 +2,7 @@
 
 class Spiderman
 {
+    protected $curl = null;
     protected $url = '';
     protected $scheme = '';
     protected $validScheme = ['http', 'https'];
@@ -44,6 +45,27 @@ class Spiderman
     {
         $this->validate($queries, 'queries');
         $this->queries = explode('&', $queries);
+    }
+
+    public function singleWebHit()
+    {
+        $this->setUpCURL();
+        $response = curl_exec($this->curl);
+        $this->closeCURL();
+        return $response;
+    }
+
+    public function setUpCURL()
+    {
+        $this->curl = curl_init();
+        curl_setopt($this->curl, CURLOPT_URL, $this->url);
+        curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt_array($this->curl, $this->options);
+    }
+
+    public function closeCURL()
+    {
+        curl_close($this->curl);
     }
 
     public function setQueryArray($queries = [])
