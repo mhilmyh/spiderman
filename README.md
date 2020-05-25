@@ -41,4 +41,4 @@ Please read CONTRIBUTING.md which is none. Sorry for that
 
 ## License
 
-This project is licensed under the MIT License. Because it is automatically choosen
+This project is licensed under the MIT License. Because it is automatically choosen as common permissive license.
