@@ -1,6 +1,6 @@
 # Spiderman
 
-There are many kinds of spiderman.
+There are many kinds of spiderman. But this spiderman will help you scrap the web
 
 ## Getting Started
 
@@ -41,4 +41,4 @@ Please read CONTRIBUTING.md which is none. Sorry for that
 
 ## License
 
-This project is licensed under the MIT License. Because it is automatically choosen
+This project is licensed under the MIT License. Because it is automatically choosen as common permissive license.
