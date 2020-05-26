@@ -13,6 +13,7 @@ class Spiderman
     protected $queries = [];
     protected $options = [];
     protected $response = '';
+    protected $info = [];
     protected $result = '';
 
     public function __construct($url, $options = [])
@@ -37,6 +38,7 @@ class Spiderman
         $this->queries = [];
         $this->options = [];
         $this->response = '';
+        $this->info = [];
         $this->result = '';
     }
 
@@ -45,10 +47,20 @@ class Spiderman
         $this->url = $this->cleanUpURL($url);
     }
 
+    public function getURL()
+    {
+        return $this->url;
+    }
+
     public function setScheme($scheme = '')
     {
         $this->validate($scheme, 'scheme');
         $this->scheme = $scheme;
+    }
+
+    public function getScheme()
+    {
+        return $this->scheme;
     }
 
     public function setHost($host = '')
@@ -57,10 +69,20 @@ class Spiderman
         $this->host = $host;
     }
 
+    public function getHost()
+    {
+        return $this->host;
+    }
+
     public function setEndpoint($endpoint = '')
     {
         $this->validate($endpoint, 'endpoint');
         $this->endpoint = $endpoint;
+    }
+
+    public function getEndpoint()
+    {
+        return $this->endpoint;
     }
 
     public function setQueryString($queries = '')
@@ -69,10 +91,20 @@ class Spiderman
         $this->queries = explode('&', $queries);
     }
 
+    public function getQueryString()
+    {
+        return implode('&', $this->queries);
+    }
+
     public function setQueryArray($queries = [])
     {
         $this->validate($queries, 'queries');
         $this->queries = $queries;
+    }
+
+    public function getQueryArray()
+    {
+        return $this->queries;
     }
 
     public function setOptions($options = [])
@@ -81,10 +113,26 @@ class Spiderman
         $this->options = $options;
     }
 
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    public function getInfo()
+    {
+        return $this->info;
+    }
+
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
     public function singleWebHit()
     {
         $this->setUpCURL();
         $response = curl_exec($this->curl);
+        $this->setInfoCURL();
         $this->closeCURL();
         $this->response = $response;
         return $response;
@@ -183,6 +231,16 @@ class Spiderman
         curl_setopt($this->curl, CURLOPT_URL, $this->url);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt_array($this->curl, $this->options);
+    }
+
+    protected function setInfoCURL()
+    {
+        $this->info['status'] = curl_getinfo($this->curl, CURLINFO_RESPONSE_CODE);
+        $this->info['cookies'] = curl_getinfo($this->curl, CURLINFO_COOKIELIST);
+        $this->info['content-type'] = curl_getinfo($this->curl, CURLINFO_CONTENT_TYPE);
+        $this->info['size'] = curl_getinfo($this->curl, CURLINFO_REQUEST_SIZE);
+        $this->info['ip'] = curl_getinfo($this->curl, CURLINFO_LOCAL_IP);
+        $this->info['cert'] = curl_getinfo($this->curl, CURLINFO_CERTINFO);
     }
 
     protected function closeCURL()
