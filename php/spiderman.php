@@ -12,6 +12,8 @@ class Spiderman
     protected $endpoint = '';
     protected $queries = [];
     protected $options = [];
+    protected $response = '';
+    protected $result = '';
 
     public function __construct($url, $options = [])
     {
@@ -70,7 +72,40 @@ class Spiderman
         $this->setUpCURL();
         $response = curl_exec($this->curl);
         $this->closeCURL();
+        $this->response = $response;
         return $response;
+    }
+
+    public function getElementById($id, $response = null)
+    {
+        if ($response === null) {
+            $response = $this->response;
+        }
+        // s for case-insensitive
+        $pattern = '/<(\w+)[^>]*id="' . $id . '"[^>]*>(.*?)<\/\1>/s';
+        preg_match_all($pattern, $response, $this->result);
+        $results = [
+            'outerHTML' => $this->result[0],
+            'tag' => $this->result[1],
+            'innerHTML' => $this->result[2]
+        ];
+        return $results;
+    }
+
+    public function getElementsByTagName($tag, $response = null)
+    {
+        if ($response === null) {
+            $response = $this->response;
+        }
+        // s for case-insensitive
+        $pattern = '/<' . $tag . '(.*?)>(.*?)<\/' . $tag . '>/s';
+        preg_match_all($pattern, $response, $this->result);
+        $results = [
+            'outerHTML' => $this->result[0],
+            'attributes' => $this->result[1],
+            'innerHTML' => $this->result[2]
+        ];
+        return $results;
     }
 
     public function setQueryArray($queries = [])
@@ -101,6 +136,8 @@ class Spiderman
                 $this->ThrowError();
                 break;
         }
+
+        $this->result = true;
     }
 
     protected function setUpCURL()
@@ -124,6 +161,7 @@ class Spiderman
             $this->host = $parsed['host'] or $this->ThrowError('type');
             $this->endpoint = $parsed['path'] or $this->ThrowError('type');
             $this->queries = explode('&', $parsed['query']) or $this->ThrowError('type');
+            $this->result = $parsed;
             return trim($url);
         } catch (TypeError $error) {
             echo "\033[31m" . "URL format is wrong : " . $url . "\033[37m\r" . PHP_EOL;

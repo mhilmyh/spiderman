@@ -2,5 +2,6 @@
 
 include 'spiderman.php';
 
-$spidey = new Spiderman("https://stackoverflow.com/questions/28169042/php-curl-web-scraping");
-echo $spidey->singleWebHit();
+$spidey = new Spiderman("https://web.ics.purdue.edu/~gchopra/class/public/pages/webdesign/05_simple.html");
+$spidey->singleWebHit();
+print_r($spidey->getElementsByTagName('body'));

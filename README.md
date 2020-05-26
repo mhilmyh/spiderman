@@ -42,7 +42,6 @@ Actually, you could edit the runner.php or any file as you want. I'm not providi
 ## Contributing
 
 Please read CONTRIBUTING.md which is **none**. Sorry for that. Big thanks to every open source project that i used. Spiderman is nothing without them. Please also check their repos !
-- [simple_html_dom_parser](https://github.com/sunra/php-simple-html-dom-parser)
 
 ## Authors
 
