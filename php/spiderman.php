@@ -36,6 +36,8 @@ class Spiderman
         $this->endpoint = '';
         $this->queries = [];
         $this->options = [];
+        $this->response = '';
+        $this->result = '';
     }
 
     public function setURL($url = '')
@@ -67,6 +69,18 @@ class Spiderman
         $this->queries = explode('&', $queries);
     }
 
+    public function setQueryArray($queries = [])
+    {
+        $this->validate($queries, 'queries');
+        $this->queries = $queries;
+    }
+
+    public function setOptions($options = [])
+    {
+        $this->validate($options, 'options');
+        $this->options = $options;
+    }
+
     public function singleWebHit()
     {
         $this->setUpCURL();
@@ -81,12 +95,41 @@ class Spiderman
         if ($response === null) {
             $response = $this->response;
         }
-        // s for case-insensitive
         $pattern = '/<(\w+)[^>]*id="' . $id . '"[^>]*>(.*?)<\/\1>/s';
-        preg_match_all($pattern, $response, $this->result);
+        preg_match($pattern, $response, $this->result);
         $results = [
             'outerHTML' => $this->result[0],
             'tag' => $this->result[1],
+            'innerHTML' => $this->result[2]
+        ];
+        return $results;
+    }
+
+    public function getElementsByName($name, $response = null)
+    {
+        if ($response === null) {
+            $response = $this->response;
+        }
+        $pattern = '/<(\w+)[^>]*name="' . $name . '"[^>]*>(.*?)<\/\1>/s';
+        preg_match_all($pattern, $response, $this->result);
+        $results = [
+            'outerHTML' => $this->result[0],
+            'tags' => $this->result[1],
+            'innerHTML' => $this->result[2]
+        ];
+        return $results;
+    }
+
+    public function getElementsByClassName($class, $response = null)
+    {
+        if ($response === null) {
+            $response = $this->response;
+        }
+        $pattern = '/<(\w+)[^>]*class="[^"]*' . $class . '[^"]*"[^>]*>(.*?)<\/\1>/s';
+        preg_match_all($pattern, $response, $this->result);
+        $results = [
+            'outerHTML' => $this->result[0],
+            'tags' => $this->result[1],
             'innerHTML' => $this->result[2]
         ];
         return $results;
@@ -97,7 +140,6 @@ class Spiderman
         if ($response === null) {
             $response = $this->response;
         }
-        // s for case-insensitive
         $pattern = '/<' . $tag . '(.*?)>(.*?)<\/' . $tag . '>/s';
         preg_match_all($pattern, $response, $this->result);
         $results = [
@@ -108,17 +150,9 @@ class Spiderman
         return $results;
     }
 
-    public function setQueryArray($queries = [])
-    {
-        $this->validate($queries, 'queries');
-        $this->queries = $queries;
-    }
-
     public function validate($what = null, $which)
     {
-        // check null
         $what or $this->ThrowError('argument');
-
         switch ($which) {
             case 'scheme':
                 in_array($what, $this->validScheme) or $this->ThrowError('assertion');
@@ -130,6 +164,9 @@ class Spiderman
                 // Not implemented yet
                 break;
             case 'queries':
+                // Not implemented yet
+                break;
+            case 'options':
                 // Not implemented yet
                 break;
             default:

@@ -2,6 +2,6 @@
 
 include 'spiderman.php';
 
-$spidey = new Spiderman("https://web.ics.purdue.edu/~gchopra/class/public/pages/webdesign/05_simple.html");
+$spidey = new Spiderman("https://www.w3schools.com/html/html_id.asp");
 $spidey->singleWebHit();
-print_r($spidey->getElementsByTagName('body'));
+print_r($spidey->getElementsByClassName('w3-bar-item'));
