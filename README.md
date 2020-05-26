@@ -1,6 +1,6 @@
 # Spiderman
 
-There are many kinds of spiderman (php, python, etc). But this spiderman will help you scrap the web
+There are many kinds of spiderman (php, python, etc). But this spiderman will help you scrap the web. And yeah, you might notice that there is some other tools this spiderman used. It is because Ironman that helped him with his cool weapon.
 
 ## Getting Started
 
@@ -37,15 +37,16 @@ cd php
 php runner.php
 ```
 
-Actually, you could edit the runner.php and any file as you want. I'm not providing any formal ways to do it.
+Actually, you could edit the runner.php or any file as you want. I'm not providing any formal ways to do it.
 
 ## Contributing
 
-Please read CONTRIBUTING.md which is none. Sorry for that
+Please read CONTRIBUTING.md which is **none**. Sorry for that. Big thanks to every open source project that i used. Spiderman is nothing without them. Please also check their repos !
+- [simple_html_dom_parser](https://github.com/sunra/php-simple-html-dom-parser)
 
 ## Authors
 
-- **Only me** - Muhamad Hilmy Haidar
+- **(it was) me** - Muhamad Hilmy Haidar
 
 ## License
 
