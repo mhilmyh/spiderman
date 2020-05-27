@@ -2,6 +2,10 @@
 
 include 'env.php';
 
+if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'storage')) {
+    mkdir(__DIR__ . DIRECTORY_SEPARATOR . 'storage', 0777, true);
+}
+
 $db = new mysqli($_ENV["DB_HOST"], $_ENV["DB_USERNAME"], $_ENV["DB_PASSWORD"], $_ENV["DB_DATABASE"]);
 
 if (!$db) {
@@ -20,7 +24,7 @@ try {
             id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             scheme VARCHAR(255),
             host VARCHAR(255),
-            enpoint VARCHAR(255),
+            endpoint VARCHAR(255),
             storage VARCHAR(255),
             created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )";

@@ -2,6 +2,7 @@
 
 class Spiderman
 {
+    protected $db = null;
     protected $curl = null;
     protected $url = '';
     protected $scheme = '';
@@ -15,10 +16,12 @@ class Spiderman
     protected $result = '';
     protected $visited = [];
 
-    public function __construct($url, $options = [])
+    public function __construct($url = null, $db, $options = [])
     {
-        $this->url = $this->cleanUpURL($url);
-        $this->options = $options;
+        $this->url = $url === null ? '' : $this->cleanUpURL($url);
+        $this->options = is_array($options) ? $options : explode(',', $options);
+        $this->db = is_array($db) ? $db : explode(',', $db);
+        $this->connection();
     }
 
     public function __destruct()
@@ -28,6 +31,7 @@ class Spiderman
 
     public function clear()
     {
+        $this->db = [];
         $this->curl = null;
         $this->url = '';
         $this->scheme = '';
@@ -38,6 +42,25 @@ class Spiderman
         $this->response = '';
         $this->info = [];
         $this->result = '';
+        $this->visited = [];
+    }
+
+    private function connection()
+    {
+        $db = null;
+        try {
+            $db = new mysqli(
+                $this->db["DB_HOST"],
+                $this->db["DB_USERNAME"],
+                $this->db["DB_PASSWORD"],
+                $this->db["DB_DATABASE"]
+            );
+            if (!$db) $this->printAll('Connect to database fail', false);
+            return $db;
+        } catch (Error $error) {
+            $this->printAll('Connect to database fail' . $error, false);
+            return null;
+        }
     }
 
     public function setURL($url = '')
@@ -128,7 +151,7 @@ class Spiderman
 
     public function getVisited()
     {
-        return $this->visited;
+        return array_keys($this->visited);
     }
 
     public function resetVisited()
@@ -140,43 +163,84 @@ class Spiderman
     {
         $this->setUpCURL($url);
         $response = curl_exec($this->curl);
-        $this->setInfoCURL();
         $this->closeCURL();
         $this->response = $response;
         return $response;
     }
 
-    public function crawlingPageLinks($url = '', $maxDepth = 5, $depth = 0)
+    public function crawlingPageLinks($url = null, $maxDepth = 1, $saveToDB = false, $saveToFile = false, $depth = 0)
     {
-        if ($this->visited[$url] || $maxDepth === $depth) {
+        if ($maxDepth + 1 === $depth) {
+            return;
+        } else if (isset($this->visited[$url]) && $this->visited[$url] === true) {
             return;
         }
-        $url = $url or $this->url;
+        $url = $url === null ? strtolower($this->url) : strtolower($url);
         $this->setUpCURL($url);
         $response = curl_exec($this->curl);
-
-        $visited[$url] = true;
-
-        $this->setInfoCURL();
         $this->closeCURL();
-        $this->response = $response;
-        return $response;
+        $this->visited[$url] = true;
+        echo $url . PHP_EOL;
+        $parsed = parse_url($url);
+        $pathfile = '';
+        if ($saveToFile) {
+            $pathfile = $this->storeResponse($response, $url);
+        }
+        if ($saveToDB) {
+            $data = [
+                'scheme' => $parsed['scheme'],
+                'host' => $parsed['host'],
+                'endpoint' => $parsed['path'],
+                'storage' => $pathfile
+            ];
+            $sql = $this->constructInsertQuery($data);
+            $sql = preg_replace('/\s+/', ' ', $sql);
+            $db = $this->connection();
+            $db->query($sql);
+            $db->close();
+        }
+        $queue = $this->getAttributeValues('href', $response)['value'];
+        $size = count($queue);
+        for ($i = 0; $i < $size; $i++) {
+            if (strlen($queue[$i]) >= 1 && $queue[$i][0] === '#') {
+                $queue[$i] = $parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'] . $queue[$i];
+            } else if (strlen($queue[$i]) >= 2 && $queue[$i][0] === '/' && $queue[$i][1] === '/') {
+                $queue[$i] = $parsed['scheme'] . ':' . $queue[$i];
+            } else if (strlen($queue[$i]) >= 1 && $queue[$i][0] === '/') {
+                $queue[$i] = $parsed['scheme'] . '://' . $parsed['host'] . $queue[$i];
+            } else if (is_int(strpos($queue[$i], 'javascript'))) {
+                unset($queue[$i]);
+            }
+        }
+        while (!empty($queue)) {
+            $url = array_shift($queue);
+            $this->crawlingPageLinks($url, $maxDepth, $saveToDB, $saveToFile, $depth + 1);
+        }
     }
 
 
-    public function getAttribute($attr = 'href', $response = null)
+    public function getAttributeValues($attr = '', $response = null, $which = '')
     {
-        if ($response === null) {
+        if ($response == null) {
             $response = $this->response;
         }
-        $pattern = '/<(\w+)[^>]*' . $attr . '="([^">]*)"[^>]*>/s';
-        preg_match_all($pattern, $response, $this->result);
-        return $this->result;
+        if ($which == null) {
+            $which = '([^">]*)';
+        }
+
+        $pattern = '/<(\w+)[^>]*' . $attr . '="' . $which . '"[^>]*>/s';
+        preg_match_all($pattern, htmlspecialchars_decode($response), $this->result);
+        $results = [
+            'outerHTML' => $this->result[0],
+            'tag' => $this->result[1],
+            'value' => $this->result[2]
+        ];
+        return $results;
     }
 
     public function getElementById($id = '', $response = null)
     {
-        if ($response === null) {
+        if ($response == null) {
             $response = $this->response;
         }
         $pattern = '/<(\w+)[^>]*id="' . $id . '"[^>]*>(.*?)<\/\1>/s';
@@ -191,7 +255,7 @@ class Spiderman
 
     public function getElementsByName($name = '', $response = null)
     {
-        if ($response === null) {
+        if ($response == null) {
             $response = $this->response;
         }
         $pattern = '/<(\w+)[^>]*name="' . $name . '"[^>]*>(.*?)<\/\1>/s';
@@ -206,7 +270,7 @@ class Spiderman
 
     public function getElementsByClassName($class = '', $response = null)
     {
-        if ($response === null) {
+        if ($response == null) {
             $response = $this->response;
         }
         $pattern = '/<(\w+)[^>]*class="[^">]*' . $class . '[^">]*"[^>]*>(.*?)<\/\1>/s';
@@ -221,7 +285,7 @@ class Spiderman
 
     public function getElementsByTagName($tag = '', $response = null)
     {
-        if ($response === null) {
+        if ($response == null) {
             $response = $this->response;
         }
         $pattern = '/<' . $tag . '(.*?)>(.*?)<\/' . $tag . '>/s';
@@ -264,9 +328,14 @@ class Spiderman
     protected function setUpCURL($url = '')
     {
         $this->curl = curl_init();
-        curl_setopt($this->curl, CURLOPT_URL, $url or $this->url);
+        curl_setopt($this->curl, CURLOPT_URL, $url == null ? $this->url : $url);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
-        if ($this->options != null) curl_setopt_array($this->curl, $this->options);
+        curl_setopt($this->curl, CURLOPT_FRESH_CONNECT, TRUE);
+        curl_setopt($this->curl, CURLOPT_USERAGENT, 'spiderman');
+        if ($this->options != null) {
+            curl_setopt_array($this->curl, $this->options);
+            $this->printAll('curl_setopt_array is executed');
+        }
     }
 
     protected function setInfoCURL()
@@ -284,10 +353,10 @@ class Spiderman
         curl_close($this->curl);
     }
 
-    protected function cleanUpURL($url)
+    protected function cleanUpURL($url = '')
     {
         try {
-            $parsed = parse_url($url);
+            $parsed = parse_url(strtolower($url));
             $this->scheme = $parsed['scheme'] or $this->ThrowError('type');
             $this->host = $parsed['host'] or $this->ThrowError('type');
             $this->endpoint = isset($parsed['path']) ? $parsed['path'] : '';
@@ -301,15 +370,17 @@ class Spiderman
         }
     }
 
-    private function printAll($success = true)
+    private function printAll($messages = null, $success = true)
     {
         $color = ["\033[31m", "\033[32m"];
         $closing = "\033[37m\r";
-        echo $color[$success] . $this->url . $closing . PHP_EOL;
-        echo $color[$success] . $this->scheme . $closing . PHP_EOL;
-        echo $color[$success] . $this->host . $closing . PHP_EOL;
-        echo $color[$success] . $this->endpoint . $closing . PHP_EOL;
-        echo $color[$success] . implode("&", $this->queries) . $closing . PHP_EOL;
+        if (is_array($messages)) {
+            foreach ($messages as $msg) {
+                echo $color[$success] . $msg . $closing . PHP_EOL;
+            }
+        } else if (is_string($messages)) {
+            echo $color[$success] . $messages . $closing . PHP_EOL;
+        }
     }
 
     private function ThrowError($type = null)
@@ -331,5 +402,46 @@ class Spiderman
                 throw new ErrorException();
                 break;
         }
+    }
+
+    public function constructInsertQuery($arrays = [])
+    {
+        $backticks = array_map(function ($element) {
+            return '`' . $element . '`';
+        }, array_keys($arrays));
+        $columns = implode(', ', $backticks);
+        $quoted = array_map(function ($element) {
+            return '"' . $element . '"';
+        }, array_values($arrays));
+        $values = implode(', ', $quoted);
+        $string = 'INSERT INTO website (' . $columns . ') VALUES (' . $values . ')';
+        return $string;
+    }
+
+    public function storeResponse($file, $url = '')
+    {
+        if ($url === '') {
+            $url = $this->url;
+        }
+        $filename = __DIR__ . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . $this->generateFilename($url);
+        file_put_contents($filename, $file);
+        return $filename;
+    }
+
+    public function generateFilename($url = '')
+    {
+        if ($url === '') {
+            $url = $this->url;
+        }
+        $parsed = parse_url($url);
+        $path = [];
+        if (isset($parsed['path'])) {
+            $path = explode('.', $parsed['path']);
+        }
+        $format = count($path) === 2 ? $path[1] : 'html';
+        $hashed = hash("md5", $url);
+        $filename = date("Y-m-d") . '-' . $hashed . '.' . $format;
+        $filename = rtrim($filename, ' \t\n\r\0\x0B\x2F');
+        return $filename;
     }
 }
