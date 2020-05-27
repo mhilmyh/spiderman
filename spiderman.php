@@ -13,11 +13,11 @@ class Spiderman
     protected $response = '';
     protected $info = [];
     protected $result = '';
+    protected $visited = [];
 
     public function __construct($url, $options = [])
     {
         $this->url = $this->cleanUpURL($url);
-        $this->printAll();
         $this->options = $options;
     }
 
@@ -126,9 +126,19 @@ class Spiderman
         return $this->response;
     }
 
-    public function singleWebHit()
+    public function getVisited()
     {
-        $this->setUpCURL();
+        return $this->visited;
+    }
+
+    public function resetVisited()
+    {
+        $this->visited = [];
+    }
+
+    public function singleWebHit($url = '')
+    {
+        $this->setUpCURL($url);
         $response = curl_exec($this->curl);
         $this->setInfoCURL();
         $this->closeCURL();
@@ -136,8 +146,35 @@ class Spiderman
         return $response;
     }
 
+    public function crawlingPageLinks($url = '', $maxDepth = 5, $depth = 0)
+    {
+        if ($this->visited[$url] || $maxDepth === $depth) {
+            return;
+        }
+        $url = $url or $this->url;
+        $this->setUpCURL($url);
+        $response = curl_exec($this->curl);
 
-    public function getElementById($id, $response = null)
+        $visited[$url] = true;
+
+        $this->setInfoCURL();
+        $this->closeCURL();
+        $this->response = $response;
+        return $response;
+    }
+
+
+    public function getAttribute($attr = 'href', $response = null)
+    {
+        if ($response === null) {
+            $response = $this->response;
+        }
+        $pattern = '/<(\w+)[^>]*' . $attr . '="([^">]*)"[^>]*>/s';
+        preg_match_all($pattern, $response, $this->result);
+        return $this->result;
+    }
+
+    public function getElementById($id = '', $response = null)
     {
         if ($response === null) {
             $response = $this->response;
@@ -152,7 +189,7 @@ class Spiderman
         return $results;
     }
 
-    public function getElementsByName($name, $response = null)
+    public function getElementsByName($name = '', $response = null)
     {
         if ($response === null) {
             $response = $this->response;
@@ -167,7 +204,7 @@ class Spiderman
         return $results;
     }
 
-    public function getElementsByClassName($class, $response = null)
+    public function getElementsByClassName($class = '', $response = null)
     {
         if ($response === null) {
             $response = $this->response;
@@ -182,7 +219,7 @@ class Spiderman
         return $results;
     }
 
-    public function getElementsByTagName($tag, $response = null)
+    public function getElementsByTagName($tag = '', $response = null)
     {
         if ($response === null) {
             $response = $this->response;
@@ -224,12 +261,12 @@ class Spiderman
         $this->result = true;
     }
 
-    protected function setUpCURL()
+    protected function setUpCURL($url = '')
     {
         $this->curl = curl_init();
-        curl_setopt($this->curl, CURLOPT_URL, $this->url);
+        curl_setopt($this->curl, CURLOPT_URL, $url or $this->url);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt_array($this->curl, $this->options);
+        if ($this->options != null) curl_setopt_array($this->curl, $this->options);
     }
 
     protected function setInfoCURL()
@@ -253,8 +290,8 @@ class Spiderman
             $parsed = parse_url($url);
             $this->scheme = $parsed['scheme'] or $this->ThrowError('type');
             $this->host = $parsed['host'] or $this->ThrowError('type');
-            $this->endpoint = $parsed['path'] or $this->ThrowError('type');
-            $this->queries = explode('&', $parsed['query']) or $this->ThrowError('type');
+            $this->endpoint = isset($parsed['path']) ? $parsed['path'] : '';
+            $this->queries = isset($parsed['query']) ? explode('&', $parsed['query']) : [];
             $this->result = $parsed;
             return trim($url);
         } catch (TypeError $error) {
