@@ -1,7 +1,5 @@
 <?php
 
-use simple_html_dom;
-
 class Spiderman
 {
     protected $curl = null;
@@ -138,13 +136,14 @@ class Spiderman
         return $response;
     }
 
+
     public function getElementById($id, $response = null)
     {
         if ($response === null) {
             $response = $this->response;
         }
         $pattern = '/<(\w+)[^>]*id="' . $id . '"[^>]*>(.*?)<\/\1>/s';
-        preg_match($pattern, $response, $this->result);
+        preg_match($pattern, htmlspecialchars_decode($response), $this->result);
         $results = [
             'outerHTML' => $this->result[0],
             'tag' => $this->result[1],
@@ -159,7 +158,7 @@ class Spiderman
             $response = $this->response;
         }
         $pattern = '/<(\w+)[^>]*name="' . $name . '"[^>]*>(.*?)<\/\1>/s';
-        preg_match_all($pattern, $response, $this->result);
+        preg_match_all($pattern, htmlspecialchars_decode($response), $this->result);
         $results = [
             'outerHTML' => $this->result[0],
             'tags' => $this->result[1],
@@ -173,8 +172,8 @@ class Spiderman
         if ($response === null) {
             $response = $this->response;
         }
-        $pattern = '/<(\w+)[^>]*class="[^"]*' . $class . '[^"]*"[^>]*>(.*?)<\/\1>/s';
-        preg_match_all($pattern, $response, $this->result);
+        $pattern = '/<(\w+)[^>]*class="[^">]*' . $class . '[^">]*"[^>]*>(.*?)<\/\1>/s';
+        preg_match_all($pattern, htmlspecialchars_decode($response), $this->result);
         $results = [
             'outerHTML' => $this->result[0],
             'tags' => $this->result[1],
@@ -189,7 +188,7 @@ class Spiderman
             $response = $this->response;
         }
         $pattern = '/<' . $tag . '(.*?)>(.*?)<\/' . $tag . '>/s';
-        preg_match_all($pattern, $response, $this->result);
+        preg_match_all($pattern, htmlspecialchars_decode($response), $this->result);
         $results = [
             'outerHTML' => $this->result[0],
             'attributes' => $this->result[1],
