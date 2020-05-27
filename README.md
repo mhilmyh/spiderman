@@ -1,6 +1,6 @@
 # Spiderman
 
-There are many kinds of spiderman (php, python, etc). But this spiderman will help you scrap the web. And yeah, you might notice that there is some other tools this spiderman used. It is because Ironman that helped him with his cool weapon.
+There are many kinds of spiderman. But this spiderman will help you scrap the web. And yeah, you might notice that there is some other tools this spiderman used. It is because Ironman that helped him with his cool weapon.
 
 ## Getting Started
 
@@ -12,7 +12,6 @@ What things you need to install the software and how to install them
 
 ```
 PHP v5.3 or above
-Python v3.6 or above
 ```
 
 ### Installing
@@ -23,17 +22,15 @@ A step by step series that tell you how to get a development env running :
 git clone [this repo]
 ```
 
-Do migrate please (every migration file is in subfolder ex. choose php) :
+Set env variable and do migration please:
 
 ```
-cd php
 php migration.php
 ```
 
-And choose the type of spiderman (ex. choose php):
+And run the spiderman from runner:
 
 ```
-cd php
 php runner.php
 ```
 
