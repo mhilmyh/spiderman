@@ -42,7 +42,7 @@ Please read CONTRIBUTING.md which is **none**. Sorry for that. Big thanks to eve
 
 ## Authors
 
-- **(it was) me** - Muhamad Hilmy Haidar
+- **(only) me** - Muhamad Hilmy Haidar
 
 ## License
 
