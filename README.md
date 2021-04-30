@@ -1,6 +1,6 @@
 # Spiderman
 
-There are many kinds of spiderman. But this spiderman will help you scrap the web. And yeah, you might notice that there is some other tools this spiderman used. It is because Ironman that helped him with his cool weapon.
+There are many kinds of spiderman. But this spiderman will help you scrap the web.
 
 ## Getting Started
 
